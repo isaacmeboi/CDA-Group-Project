@@ -52,8 +52,8 @@ int instruction_fetch(unsigned PC,unsigned *Mem,unsigned *instruction)
 	
 	if (PC % 4 == 0)
         *instruction = Mem[Mem_Index];return 0;
-    else
-		return 1;
+    	else
+	return 1;
 	
 }
 
