@@ -20,17 +20,17 @@ void ALU(unsigned A,unsigned B,char ALUControl,unsigned *ALUresult,char *Zero)
         else
             *ALUresult = 0;break;
         
-		case 3: //011
+	case 3: //011
         if (A < B)
-			*ALUresult = 1;
+	*ALUresult = 1;
         else
-			*ALUresult = 0;break;
+	*ALUresult = 0;break;
 		
-		case 4: //100
-            *ALUresult = A & B;break;
+	case 4: //100
+           *ALUresult = A & B;break;
 
         case 5: //101
-			*ALUresult = A | B;break;
+	*ALUresult = A | B;break;
 
         case 6: //110
             *ALUresult = B << 16;break;
