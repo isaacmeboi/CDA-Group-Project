@@ -50,11 +50,11 @@ int instruction_fetch(unsigned PC,unsigned *Mem,unsigned *instruction)
 {
 	unsigned Mem_Index = PC >> 2;
 	
-	if (PC % 4 == 0)
-        *instruction = Mem[Mem_Index];return 0;
-    	else
-	return 1;
-	
+	if (PC % 4 == 0) {
+        *instruction = Mem[Mem_Index];
+        return 0;
+    } else
+	    return 1;	
 }
 
 void instruction_partition(unsigned instruction, unsigned *op, unsigned *r1,unsigned *r2, unsigned *r3, unsigned *funct, unsigned *offset, unsigned *jsec)
@@ -74,3 +74,43 @@ void instruction_partition(unsigned instruction, unsigned *op, unsigned *r1,unsi
 	
 }
 
+/* Read Register *//* 5 Points */
+void read_register(unsigned r1, unsigned r2, unsigned *Reg, unsigned *data1, unsigned *data2) {
+    *data1 = Reg[r1];
+    *data2 = Reg[r2];
+}
+
+/* Sign Extend *//* 10 Points */
+void sign_extend(unsigned offset,unsigned *extended_value){
+	unsigned temp = offset;
+	temp >> 15;
+	if (temp) {
+		*extended_value = offset & 0xffff0000;
+	} else {
+		*extended_value = offset;
+	}
+}
+
+/* Write Register *//* 10 Points */
+void write_register(unsigned r2,unsigned r3,unsigned memdata,unsigned ALUresult,char RegWrite,char RegDst,char MemtoReg,unsigned *Reg){
+	if(RegWrite==1 && MemtoReg==1) {
+		Reg[RegDst] = memdata;
+	} else if(RegWrite==1 && MemtoReg==0) {
+		Reg[RegDst] = ALUresult;
+	}
+}
+
+/* PC update *//* 10 Points */
+void PC_update(unsigned jsec,unsigned extended_value,char Branch,char Jump,char Zero,unsigned *PC){
+	*PC=*PC+4;
+
+	if(Branch==1 && Zero==1) {
+		*PC=extended_value;
+	}
+
+	if(Jump==1) {
+		jsec<<2;
+		*PC<<28;
+		*PC = (*PC) | (*PC>>28);
+	}
+}
