@@ -87,7 +87,7 @@ void sign_extend(unsigned offset,unsigned *extended_value){
 	if (temp == 1) {
 		*extended_value = offset | 0xffff0000;
 	} else {
-		*extended_value = offset & 0x0000ffff;;
+		*extended_value = offset & 0x0000ffff;
 	}
 }
 
