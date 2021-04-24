@@ -82,12 +82,12 @@ void read_register(unsigned r1, unsigned r2, unsigned *Reg, unsigned *data1, uns
 
 /* Sign Extend *//* 10 Points */
 void sign_extend(unsigned offset,unsigned *extended_value){
-	unsigned temp = offset;
+	unsigned temp = offset >> 15;
 	temp >> 15;
-	if (temp) {
-		*extended_value = offset & 0xffff0000;
+	if (temp == 1) {
+		*extended_value = offset | 0xffff0000;
 	} else {
-		*extended_value = offset;
+		*extended_value = offset & 0x0000ffff;;
 	}
 }
 
