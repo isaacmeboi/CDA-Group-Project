@@ -96,7 +96,7 @@ void write_register(unsigned r2,unsigned r3,unsigned memdata,unsigned ALUresult,
 	if(RegWrite==1 && MemtoReg==1) {
 		Reg[RegDst] = memdata;
 	} else if(RegWrite==1 && MemtoReg==0) {
-		Reg[RegDst] = ALUresult;
+		Reg[RegDst] = memdata;
 	}
 }
 
