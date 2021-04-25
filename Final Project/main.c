@@ -114,3 +114,139 @@ void PC_update(unsigned jsec,unsigned extended_value,char Branch,char Jump,char 
 		*PC = (*PC) | (*PC>>28);
 	}
 }
+
+//instruct decoder
+int instruction_decode(unsigned op,struct_controls *controls)
+{
+	controls->ALUOp=0;
+	controls->MemWrite=0;
+	controls->Branch=0;
+	controls->ALUSrc=0;
+	controls->Jump=0;
+	controls->MemRead=0;
+	controls->RegDst=0;
+	controls->MemtoReg=0;
+	controls->RegWrite=0;
+	
+	switch (op) 
+	{
+		case 0: // add, and, or, slt, sltu, sub
+			controls->RegDst = 1; // multiplexer path 1
+			controls->ALUOp = 7; //r-type instruction
+			controls->RegWrite = 1; //enabled
+			break;
+                
+        case 8: // addi
+            controls->ALUSrc = 1;
+            controls->RegWrite = 1;
+            break;
+                
+        	case 4: // beq
+                	controls->Branch = 1; 
+                	controls->ALUOp = 1; //sub
+                	controls->RegDst = 2; // doesnt matter
+                	controls->MemtoReg = 2; // dummy fathead
+                	break;
+                
+        	case 15: // lui
+                	controls->ALUOp = 6; // move left_extended 16
+                	controls->ALUSrc = 1; 
+                	controls->RegWrite = 1; 
+                	break;
+                
+	        case 35: // lw
+	                controls->MemRead = 1;
+	                controls->MemtoReg = 1;
+	                controls->ALUSrc = 1;
+	                controls->RegWrite = 1;
+	                break;
+                
+	        case 10: // slti
+	                controls->ALUOp = 2; // set <
+	                controls->ALUSrc = 1;
+	                controls->RegWrite = 1;
+	                break;
+	                
+	        case 11: // sltiu
+	                controls->ALUOp = 3; // set < unsigned
+	                controls->ALUSrc = 1;
+	                controls->RegWrite = 1;
+	                break;
+	                
+	        case 43: // sw
+	                controls->RegDst = 2; // dont matter
+	                controls->MemtoReg = 2; // cringe
+	                controls->MemWrite = 1;
+	                controls->ALUSrc = 1;
+	                break;
+	                
+	        case 2: // j
+	                controls->Jump = 1;
+	                break;
+	                
+	                default: return 1; // if halt occurs
+	    } 
+	    return 0; // if halt condition occurs
+}
+
+//ALU operations 
+int ALU_operations(unsigned data1,unsigned data2,unsigned extended_value,unsigned funct,char ALUOp,char ALUSrc,unsigned *ALUresult,char *Zero)
+{
+	unsigned char ALUControl = ALUOp;
+    
+	switch(ALUOp){
+		case 0: case 1: case 2: case 3: case 6: //i types
+			ALU(data1,data2,ALUOp,ALUresult,Zero);
+			break;
+            case 0x7:	//R-Type Instructions
+			switch(funct){
+				case 0x20:	// add
+					ALUControl = 0x0;
+                    break;
+				case 0x24:	// and
+					ALUControl = 0x4;
+                    break;
+				case 0x25:	// or
+					ALUControl = 0x5;
+                    break;
+				case 0x2a:	// slt
+					ALUControl = 0x2;
+                    break;
+				case 0x2b:	// sltu
+					ALUControl = 0x3;
+                    break;
+				default:	// halt conditions
+					return 1;
+			}
+	ALU(data1, data2, ALUControl, ALUresult, Zero);
+	
+	// no halt condition 
+	return 0;
+	}
+	
+// RW mem
+int rw_memory(unsigned ALUresult,unsigned data2,char MemWrite,char MemRead,unsigned *memdata,unsigned *Mem)
+{
+	unsigned MemZero = 0x00000000;
+	
+	// if MemRead or MemWrite experience halt conditions
+	if ((MemRead | MemWrite) && (ALUresult % 4 != 0 | (ALUresult >> 2) > 0xFFFF | (ALUresult >> 2) < MemZero))  
+	{
+		// if halt condition occurs
+		return 1;
+        }
+        
+        if (MemRead)
+        {
+        	// reads content of memory location addressed by ALUresult to memdata
+        	*memdata = Mem[ALUresult >> 2];
+        }
+        
+            if (MemWrite)
+            {
+                Mem[ALUresult >> 2] = data2;
+            }
+            
+            // halt condition occurs
+            return 0;
+}
